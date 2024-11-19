@@ -2,6 +2,7 @@ package com.example.networkapp
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
@@ -14,6 +15,8 @@ import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.squareup.picasso.Picasso
 import org.json.JSONObject
+import java.io.File
+import java.io.FileOutputStream
 
 // TODO (1: Fix any bugs)
 // TODO (2: Add function saveComic(...) to save comic info when downloaded
@@ -27,10 +30,13 @@ class MainActivity : AppCompatActivity() {
     lateinit var numberEditText: EditText
     lateinit var showButton: Button
     lateinit var comicImageView: ImageView
+    lateinit var file: File
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        file = File(this.filesDir, "comic.json")
 
         requestQueue = Volley.newRequestQueue(this)
 
@@ -44,6 +50,9 @@ class MainActivity : AppCompatActivity() {
             downloadComic(numberEditText.text.toString())
         }
 
+        if (file.exists()) {
+            showComic(JSONObject(file.readText()))
+        }
     }
 
     // Fetches comic from web as JSONObject
@@ -62,12 +71,17 @@ class MainActivity : AppCompatActivity() {
         titleTextView.text = comicObject.getString("title")
         descriptionTextView.text = comicObject.getString("alt")
         Picasso.get().load(comicObject.getString("img")).into(comicImageView)
+        saveComic(comicObject)
     }
 
     // Implement this function
     private fun saveComic(comicObject: JSONObject) {
-
+        try{
+            file.writeText(comicObject.toString())
+            Toast.makeText(this, "Saving comic", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception){
+            Toast.makeText(this, "Error saving comic", Toast.LENGTH_SHORT).show()
+        }
+        Toast.makeText(this, "Comic saved", Toast.LENGTH_SHORT).show()
     }
-
-
 }
